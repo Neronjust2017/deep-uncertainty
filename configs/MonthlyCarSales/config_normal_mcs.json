@@ -1,5 +1,5 @@
 {
-    "name": "Normal_Mlp_mcs",
+    "name": "Normal_CNN_mcs",
     "n_gpu": 1,
 
     "arch": {
@@ -7,7 +7,7 @@
         "args": {
             "input_dim": 1,
             "output_dim": 1,
-            "filters": [50, 50],
+            "filters": [256, 256],
             "kernels": [3, 3]
         }
     },
@@ -45,7 +45,7 @@
     "trainer": {
         "type":"Normal",
         "epochs": 100,
-        "save_dir": "saved/",
+        "save_dir": "saved_mcs/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
@@ -53,7 +53,7 @@
         "tensorboard": true
     },
       "evaluater": {
-        "result_dir": "saved/",
+        "result_dir": "saved_mcs/",
         "verbosity": 2,
           "visualization": {
               "scatter": false

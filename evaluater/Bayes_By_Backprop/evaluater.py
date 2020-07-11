@@ -56,7 +56,7 @@ class EvaluaterBayes(BaseEvaluater):
                 targets[start:end, :] = target
                 start = end
 
-                self.test_metrics.update('loss', loss.item())
+                self.test_metrics.update('loss', loss.item(), n=len(target))
                 for met in self.metric_ftns:
                     self._compute_metric(self.test_metrics, met, outputs, target)
 

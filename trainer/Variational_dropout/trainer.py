@@ -80,9 +80,9 @@ class TrainerVd(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
-            self.train_metrics.update('kl_cost', Edkl.item())
-            self.train_metrics.update('pred_cost', mlpdw.item())
+            self.train_metrics.update('loss', loss.item(), n=len(target))
+            self.train_metrics.update('kl_cost', Edkl.item(), n=len(target))
+            self.train_metrics.update('pred_cost', mlpdw.item(), n=len(target))
 
             for met in self.metric_ftns:
                 self._compute_metric(self.train_metrics, met, outputs, target)
@@ -148,9 +148,9 @@ class TrainerVd(BaseTrainer):
                 loss = Edkl + mlpdw
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
-                self.valid_metrics.update('loss', loss.item())
-                self.valid_metrics.update('kl_cost', Edkl.item())
-                self.valid_metrics.update('pred_cost', mlpdw.item())
+                self.valid_metrics.update('loss', loss.item(), n=len(target))
+                self.valid_metrics.update('kl_cost', Edkl.item(), n=len(target))
+                self.valid_metrics.update('pred_cost', mlpdw.item(), n=len(target))
 
                 for met in self.metric_ftns:
                     self._compute_metric(self.valid_metrics, met, outputs, target)

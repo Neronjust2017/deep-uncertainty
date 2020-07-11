@@ -3,6 +3,8 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 from torch.utils.data.sampler import SubsetRandomSampler
+from torch.utils.data.dataset import Subset
+
 from torch.utils.data import TensorDataset
 
 
@@ -18,7 +20,7 @@ class BaseDataLoader(DataLoader):
         self.batch_idx = 0
         self.n_samples = len(self.dataset)
 
-        self.sampler, self.valid_sampler, self.test_sampler = self._split_sampler(self.validation_split, self.test_split, normalization)
+        self.sampler, self.valid_sampler, self.test_subset = self._split_sampler(self.validation_split, self.test_split, normalization)
 
         self.init_kwargs = {
             'dataset': self.dataset,
@@ -30,6 +32,14 @@ class BaseDataLoader(DataLoader):
         super().__init__(sampler=self.sampler, **self.init_kwargs)
 
         self.valid_data_loader = self.split_validation()
+
+        self.test_data_loader_init_kwargs = {
+            'batch_size': batch_size,
+            'shuffle': False,
+            'collate_fn': collate_fn,
+            'num_workers': num_workers
+        }
+
         self.test_data_loader = self.split_test()
 
     def _split_sampler(self, validation_split, test_split, normalization):
@@ -38,7 +48,7 @@ class BaseDataLoader(DataLoader):
 
         idx_full = np.arange(self.n_samples)
 
-        np.random.seed(0)
+        np.random.seed(1)
         np.random.shuffle(idx_full)
 
         if isinstance(validation_split, int):
@@ -64,7 +74,8 @@ class BaseDataLoader(DataLoader):
 
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
-        test_sampler = SubsetRandomSampler(test_idx)
+        # test_sampler = SubsetRandomSampler(test_idx)
+        test_subset = Subset(self.dataset, test_idx)
 
         # turn off shuffle option which is mutually exclusive with sampler
         self.shuffle = False
@@ -72,7 +83,7 @@ class BaseDataLoader(DataLoader):
         self.valid_n_samples = len(valid_idx)
         self.test_n_samples = len(test_idx)
 
-        return train_sampler, valid_sampler, test_sampler
+        return train_sampler, valid_sampler, test_subset
 
     def split_validation(self):
         if self.valid_sampler is None:
@@ -86,7 +97,7 @@ class BaseDataLoader(DataLoader):
         if self.split_test is None:
             return None
         else:
-            test_data_loader = DataLoader(sampler=self.test_sampler, **self.init_kwargs)
+            test_data_loader = DataLoader(self.test_subset, **self.test_data_loader_init_kwargs)
             test_data_loader.n_samples = self.test_n_samples
             return test_data_loader
 

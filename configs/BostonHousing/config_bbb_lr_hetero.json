@@ -1,9 +1,9 @@
 {
-    "name": "BH_Bayes_MLP_homo",
+    "name": "BH_Bayes_LR_MLP_hetero",
     "n_gpu": 1,
     "arch": {
         "Bayes": "Bayes_By_Backprop",
-        "type": "Bayes_MLP",
+        "type": "Bayes_MLP_LR",
         "args": {
             "input_dim": 13,
             "output_dim": 1,
@@ -11,17 +11,8 @@
                 50,
                 50
             ],
-            "regression_type": "homo",
-            "prior": {
-                "type": "GMM_prior",
-                "paramters": {
-                    "mu1": 0,
-                    "mu2": 0,
-                    "sigma1": 10,
-                    "sigma2": 0.0005,
-                    "pi": 0.75
-                }
-            }
+            "prior_sig": 10,
+            "regression_type": "hetero"
         }
         },
         "data_loader": {
@@ -43,11 +34,11 @@
                 "amsgrad": true
             }
         },
-        "loss": "log_gaussian_homo",
+        "loss": "log_gaussian_hetero",
         "metrics": [
-            "mse_homo",
-            "picp_homo",
-            "mpiw_homo"
+            "mse_hetero",
+            "picp_hetero",
+            "mpiw_hetero"
         ],
         "lr_scheduler": {
             "type": "StepLR",

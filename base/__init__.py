@@ -2,3 +2,5 @@ from .base_data_loader import *
 from .base_model import *
 from .base_trainer import *
 from .base_evaluater import *
+from .base_trainer_ensemble import *
+from .base_evaluater_ensemble import *

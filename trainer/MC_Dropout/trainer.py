@@ -56,7 +56,7 @@ class TrainerMc(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
+            self.train_metrics.update('loss', loss.item(), n=len(target))
             for met in self.metric_ftns:
                 self._compute_metric(self.train_metrics, met, outputs, target)
 
@@ -112,7 +112,7 @@ class TrainerMc(BaseTrainer):
                 mean = torch.mean(outputs, dim=2)
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
-                self.valid_metrics.update('loss', loss.item())
+                self.valid_metrics.update('loss', loss.item(), n=len(target))
                 for met in self.metric_ftns:
                     self._compute_metric(self.valid_metrics, met, outputs, target)
                 # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))

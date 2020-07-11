@@ -5,10 +5,11 @@ import numpy as np
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
-import model.model as module_arch
+import model.Bayes_By_Backprop.model as module_arch_Bayes_By_Backprop
+import model.Variational_dropout.model as module_arch_Variational_dropout
 from parse_config import ConfigParser
-from trainer import Trainer, TrainerMc, TrainerQd, TrainerDe
-from evaluater import Evaluater, EvaluaterMC, EvaluaterQd, EvaluaterDE
+from trainer import TrainerVd, TrainerBayes
+from evaluater import EvaluaterBayes, EvaluaterVd
 
 # fix random seeds for reproducibility
 SEED = 123
@@ -26,7 +27,8 @@ def main(config):
     test_data_loader = data_loader.test_data_loader
 
     # build model architecture, then print to console
-    model = config.init_obj('arch', module_arch)
+    model = config.init_obj('arch', eval("module_arch_%s" %(config.config['arch']['Bayes'])))
+
     logger.info(model)
 
     # get function handles of loss and metrics
@@ -39,49 +41,37 @@ def main(config):
 
     lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
-    if config.config['trainer']['type'] == 'MC_dropout':
-        trainer = TrainerMc(model, criterion, metrics, optimizer,
+    if config.config['trainer']['type'] == 'Bayes_By_Backprop':
+        trainer = TrainerBayes(model, criterion, metrics, optimizer,
                           config=config,
                           data_loader=data_loader,
                           valid_data_loader=valid_data_loader,
                           lr_scheduler=lr_scheduler)
-    elif config.config['trainer']['type'] == 'Quality_driven_PI':
-        trainer = TrainerQd(model, criterion, metrics, optimizer,
-                          config=config,
-                          data_loader=data_loader,
-                          valid_data_loader=valid_data_loader,
-                          lr_scheduler=lr_scheduler)
-    elif config.config['trainer']['type'] == 'Deep_Ensemble':
-        trainer = TrainerDe(model, criterion, metrics, optimizer,
-                            config=config,
-                            data_loader=data_loader,
-                            valid_data_loader=valid_data_loader,
-                            lr_scheduler=lr_scheduler)
+    elif config.config['trainer']['type'] == 'Variational_dropout':
+        trainer = TrainerVd(model, criterion, metrics, optimizer,
+               config=config,
+               data_loader=data_loader,
+               valid_data_loader=valid_data_loader,
+               lr_scheduler=lr_scheduler)
     else:
-        trainer = Trainer(model, criterion, metrics, optimizer,
-                            config=config,
-                            data_loader=data_loader,
-                            valid_data_loader=valid_data_loader,
-                            lr_scheduler=lr_scheduler)
+        print("No trainer match.")
+        exit(1)
     trainer.train()
 
-    if config.config['trainer']['type'] == 'MC_dropout':
-        evaluater = EvaluaterMC(model, criterion, metrics,
+    if config.config['trainer']['type'] == 'Bayes_By_Backprop':
+        evaluater = EvaluaterBayes(model, criterion, metrics,
                                 config=config,
                                 test_data_loader=test_data_loader)
-    elif config.config['trainer']['type'] == 'Quality_driven_PI':
-        evaluater = EvaluaterQd(model, criterion, metrics,
-                              config=config,
-                              test_data_loader=test_data_loader)
-    elif config.config['trainer']['type'] == 'Deep_Ensemble':
-        evaluater = EvaluaterDE(model, criterion, metrics,
+    elif config.config['trainer']['type'] == 'Variational_dropout':
+        evaluater = EvaluaterVd(model, criterion, metrics,
                               config=config,
                               test_data_loader=test_data_loader)
     else:
-        evaluater = Evaluater(model, criterion, metrics,
-                                config=config,
-                                test_data_loader=test_data_loader)
+        print("No evaluater match.")
+        exit(1)
+
     evaluater.evaluate()
+
 
 
 if __name__ == '__main__':

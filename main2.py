@@ -8,7 +8,7 @@ import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer, TrainerMc, TrainerQd, TrainerDe
-from evaluater import Evaluater, EvaluaterMC, EvaluaterQd
+from evaluater import Evaluater, EvaluaterMC, EvaluaterQd, EvaluaterDE
 
 # fix random seeds for reproducibility
 SEED = 123
@@ -73,10 +73,14 @@ def main(config):
         evaluater = EvaluaterQd(model, criterion, metrics,
                               config=config,
                               test_data_loader=test_data_loader)
-    else:
-        evaluater = Evaluater(model, criterion, metrics,
+    elif config.config['trainer']['type'] == 'Deep_Ensemble':
+        evaluater = EvaluaterDE(model, criterion, metrics,
                               config=config,
                               test_data_loader=test_data_loader)
+    else:
+        evaluater = Evaluater(model, criterion, metrics,
+                                config=config,
+                                test_data_loader=test_data_loader)
     evaluater.evaluate()
 
 

@@ -1,20 +1,23 @@
 {
-    "name": "Bayes_Mlp_hetero",
+    "name": "BH_Bayes_MLP_hetero",
     "n_gpu": 1,
 
     "arch": {
         "Bayes": "Bayes_By_Backprop",
-        "type": "Bayes_Mlp",
+        "type": "Bayes_MLP",
         "args": {
             "input_dim": 13,
             "output_dim": 1,
             "n_hid": [50, 50],
             "regression_type": "hetero",
             "prior": {
-                "type": "Gaussian_prior",
+                "type": "GMM_prior",
                 "paramters": {
-                    "mu": 0,
-                    "sigma": 10
+                    "mu1": 0,
+                    "mu2": 0,
+                    "sigma1": 10,
+                    "sigma2": 0.0005,
+                    "pi":0.75
                 }
             }
         }

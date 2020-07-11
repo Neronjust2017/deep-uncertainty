@@ -19,8 +19,8 @@ def top_k_acc(output, target, k=3):
             correct += torch.sum(pred[:, i] == target).item()
     return correct / len(target)
 
-# Normal\MC_dropout\BBB(BBB_LR)\QD\DE
-def mse(output, target, type=None, reduction = "sum"):
+# Normal\MC_dropout\BBB(BBB_LR)\QD\DE\DE_ensemble
+def mse(output, target, type=None, reduction = "mean"):
     if type in ['MC_dropout','BBB', 'VD']:
         mean = torch.mean(output, dim=2)
         return F.mse_loss(mean, target, reduction=reduction)
@@ -28,16 +28,16 @@ def mse(output, target, type=None, reduction = "sum"):
         mean = torch.mean(output, dim=1)
         mean = mean.view(len(output), 1)
         return F.mse_loss(mean, target, reduction=reduction)
-    elif type in ['DE']:
+    elif type in ['DE', 'DE_ensemble']:
         return F.mse_loss(output[:, :1], target, reduction=reduction)
     else:
         return F.mse_loss(output, target, reduction=reduction)
 
-# Normal\MC_dropout\BBB(BBB_LR)\QD\DE
+# Normal\MC_dropout\BBB(BBB_LR)\QD\DE\DE_ensemble
 def rmse(output, target, type=None):
     return mse(output, target, type, reduction="mean") **0.5
 
-# MC_dropout\BBB(BBB_LR)\QD\DE
+# MC_dropout\BBB(BBB_LR)\QD\DE\DE_ensemble
 def picp(output, target, type=None):
     return picp_mpiw(output, target, type)[0]
 
@@ -57,8 +57,15 @@ def picp_mpiw(output, target, type=None):
         mu = output[:, :1]
         sig = output[:, 1:]
         sig_pos = torch.log(1 + torch.exp(sig)) + 1e-06
-        y_U = mu + 2 * sig_pos
-        y_L = mu - 2 * sig_pos
+        std = torch.sqrt(sig_pos)
+        y_U = mu + 2 * std
+        y_L = mu - 2 * std
+    elif type in ['DE_ensemble']:
+        mu = output[:, :1]
+        sig_pos = output[:, 1:]
+        std = torch.sqrt(sig_pos)
+        y_U = mu + 2 * std
+        y_L = mu - 2 * std
     else:
         exit(1)
     zeros = torch.zeros_like(y_U)
@@ -97,7 +104,7 @@ def picp_mpiw_homo(output, target, type=None):
     mpiw = torch.mean(y_U - y_L)
     return picp, mpiw
 
-def mse_homo(output, target, type=None, reduction = "sum"):
+def mse_homo(output, target, type=None, reduction = "mean"):
     if type in ['MC_dropout','BBB', 'VD']:
         mean = torch.mean(output[0], dim=2)
         return F.mse_loss(mean, target, reduction=reduction)
@@ -134,7 +141,7 @@ def picp_mpiw_hetero(output, target, type=None):
     mpiw = torch.mean(y_U - y_L)
     return picp, mpiw
 
-def mse_hetero(output, target, type=None, reduction = "sum"):
+def mse_hetero(output, target, type=None, reduction = "mean"):
     if type in ['MC_dropout','BBB', 'VD']:
         mean = torch.mean(output[:, :1, :], dim=2)
         return F.mse_loss(mean, target, reduction=reduction)

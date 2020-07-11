@@ -53,7 +53,7 @@
     "trainer": {
         "type": "Bayes_By_Backprop",
         "epochs": 100,
-        "save_dir": "saved/",
+        "save_dir": "saved_mcs/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
@@ -61,7 +61,7 @@
         "tensorboard": true
     },
       "evaluater": {
-        "result_dir": "saved/",
+        "result_dir": "saved_mcs/",
         "verbosity": 2,
        "visualization": {
               "scatter": false

@@ -7,7 +7,7 @@
         "args": {
             "input_dim": 13,
             "output_dim": 2,
-            "n_hid": [50, 50]
+            "n_hid": [50]
             }
         },
 
@@ -23,11 +23,11 @@
         }
     },
     "optimizer": {
-        "type": "Adam",
+        "type": "SGD",
         "args":{
-            "lr": 0.001,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr": 0.003,
+            "weight_decay": 1e-6,
+            "momentum": 0.9
         }
     },
     "loss": "mse_loss",
@@ -45,7 +45,7 @@
     },
     "trainer": {
         "type": "Quality_driven_PI",
-        "epochs": 100,
+        "epochs": 200,
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
@@ -54,11 +54,11 @@
         "tensorboard": true,
         "loss": {
             "type_in": "pred_intervals",
-            "alpha": 0.05,
+            "alpha": 0.1,
             "loss_type": "qd_soft",
             "censor_R": false,
             "soften": 160,
-            "lambda_in": 10,
+            "lambda_in": 5,
             "sigma_in": 0.5
         }
 
@@ -68,11 +68,11 @@
         "verbosity": 2,
         "loss": {
             "type_in": "pred_intervals",
-            "alpha": 0.05,
+            "alpha": 0.1,
             "loss_type": "qd_soft",
             "censor_R": false,
             "soften": 160,
-            "lambda_in": 10,
+            "lambda_in": 5,
             "sigma_in": 0.5
         },
           "visualization": {

@@ -115,7 +115,7 @@ class CNN(BaseModel):
         self.kernels = kernels
         self.regression_type = regression_type
 
-        num_features = 50*30
+        num_features = 256*30
         conv = []
         conv.append(nn.Conv1d(self.input_dim, self.filters[0], self.kernels[0]))
         for i in range(1, len(self.filters)):
@@ -141,7 +141,9 @@ class CNN(BaseModel):
     def forward(self, x):
         # -----------------
         for i in range(len(self.conv)):
-            x = self.pool(self.act(self.conv[i](x)))
+            x = self.act(self.conv[i](x))
+        x = self.pool(x)
+        print(x.shape)
         x = x.reshape(x.size(0), -1)
         y = self.fc(x)
         return y
@@ -206,7 +208,6 @@ class CNN_dropout(BaseModel):
             num_features *= s
         return num_features
 
-
-model = CNN(input_dim=1, output_dim=1, filters=[50,50], kernels=[3,3], activation='ReLU')
-x = torch.randn(48, 1, 36)
-model(x)
+# model = CNN(input_dim=1, output_dim=1, filters=[50,50], kernels=[3,3], activation='ReLU')
+# x = torch.randn(48, 1, 36)
+# model(x)

@@ -57,7 +57,7 @@ class EvaluaterQd(BaseEvaluater):
                 loss, PICP, MPIW = self.loss(output, target)
                 self.test_metrics.update('loss', loss.item())
                 for met in self.metric_ftns:
-                    self._compute_metric(self.test_metrics, met,output, target)
+                    self.test_metrics.update(met.__name__, met(output, target, type="QD"))
 
         result = self.test_metrics.result()
 
@@ -66,12 +66,6 @@ class EvaluaterQd(BaseEvaluater):
             self.logger.info('    {:15s}: {}'.format(str(key), value))
 
         self._visualization(Outputs, targets)
-
-    def _compute_metric(self, metrics, met, output, target, type="QD"):
-        if self.model.regression_type == 'homo':
-            metrics.update(met.__name__, met([output, self.model.log_noise.exp()], target,type))
-        else:
-            metrics.update(met.__name__, met(output, target, type))
 
     def _visualization(self, Outputs, targets):
         save_path = str(self.result_dir)

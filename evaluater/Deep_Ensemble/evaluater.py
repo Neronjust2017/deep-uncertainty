@@ -4,8 +4,7 @@ from torchvision.utils import make_grid
 from base import BaseEvaluater
 from utils import *
 
-
-class Evaluater(BaseEvaluater):
+class EvaluaterDE(BaseEvaluater):
     """
     Evaluater class
     """
@@ -37,11 +36,11 @@ class Evaluater(BaseEvaluater):
                 targets[start:end, :] = target
                 start = end
 
-                loss = self._compute_loss(output, target)
-                self.test_metrics.update('loss', loss.item(), n=len(target))
+                loss = self.criterion(output, target)
+                self.test_metrics.update('loss', loss.item())
 
                 for met in self.metric_ftns:
-                    self._compute_metric(self.test_metrics, met,output, target)
+                    self.test_metrics.update(met.__name__, met(output, target, type="DE"))
 
         result = self.test_metrics.result()
 
@@ -51,25 +50,15 @@ class Evaluater(BaseEvaluater):
 
         self._visualization(Outputs, targets)
 
-    def _compute_loss(self, output, target):
-        if self.model.regression_type == 'homo':
-            loss = self.criterion(output, target, self.model.log_noise.exp(), self.model.output_dim)
-        elif self.model.regression_type == 'hetero':
-            loss = self.criterion(output, target, self.model.output_dim/2)
-        else:
-            loss = self.criterion(output, target)
-        return loss
-
-    def _compute_metric(self, metrics, met, output, target, type=None):
-        if self.model.regression_type == 'homo':
-            metrics.update(met.__name__, met([output, self.model.log_noise.exp()], target,type))
-        else:
-            metrics.update(met.__name__, met(output, target, type))
-
     def _visualization(self, Outputs, targets):
         save_path = str(self.result_dir)
         train = False
         scatter = self.config["evaluater"]["visualization"]["scatter"]
-        plot_prediction(Outputs, targets, save_path, train, scatter)
+        mu = Outputs[:, :1]
+        sig = Outputs[:, 1:]
+        sig_pos = torch.log(1 + torch.exp(sig)) + 1e-06
+        std = torch.sqrt(sig_pos)
+        plot_uncertainty(mu, std, targets[:, :1], save_path, train, scatter)
+
 
 

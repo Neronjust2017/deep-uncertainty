@@ -1,13 +1,12 @@
 {
-    "name": "Vd_Mlp",
+    "name": "Qd_Mlp",
     "n_gpu": 1,
 
     "arch": {
-        "Bayes": "Variational_dropout",
-        "type": "Vd_Mlp",
+        "type": "MLP",
         "args": {
             "input_dim": 13,
-            "output_dim": 1,
+            "output_dim": 2,
             "n_hid": [50]
             }
         },
@@ -17,7 +16,7 @@
         "args":{
             "data_dir": "data/",
             "batch_size": 128,
-            "shuffle": true,
+            "shuffle": false,
             "validation_split": 0.1,
             "test_split": 0.1,
             "num_workers": 0
@@ -26,8 +25,9 @@
     "optimizer": {
         "type": "SGD",
         "args":{
-            "lr": 0.001,
-            "weight_decay": 0
+            "lr": 0.003,
+            "weight_decay": 1e-6,
+            "momentum": 0.9
         }
     },
     "loss": "mse_loss",
@@ -44,21 +44,37 @@
         }
     },
     "trainer": {
-        "type": "Variational_dropout",
+        "type": "Quality_driven_PI",
         "epochs": 100,
-        "save_dir": "saved/",
+        "save_dir": "saved/ensemble2/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
-        "early_stop": 10,
-        "tensorboard": true
+        "tensorboard": true,
+        "loss": {
+            "type_in": "pred_intervals",
+            "alpha": 0.1,
+            "loss_type": "qd_soft",
+            "censor_R": false,
+            "soften": 160,
+            "lambda_in": 5,
+            "sigma_in": 0.5
+        }
     },
       "evaluater": {
-        "result_dir": "saved/",
+        "result_dir": "saved/ensemble2/",
         "verbosity": 2,
+        "loss": {
+            "type_in": "pred_intervals",
+            "alpha": 0.1,
+            "loss_type": "qd_soft",
+            "censor_R": false,
+            "soften": 160,
+            "lambda_in": 5,
+            "sigma_in": 0.5
+        },
           "visualization": {
             "scatter": true
         }
-
     }
 }

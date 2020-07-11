@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import pandas as pd
+import torch
 from pathlib import Path
 from itertools import repeat
 from collections import OrderedDict
@@ -45,7 +46,8 @@ class MetricTracker:
     def update(self, key, value, n=1):
         # if self.writer is not None:
         #     self.writer.add_scalar(key, value)
-        self._data.total[key] += value * n
+        # self._data.total[key] += value * n
+        self._data.total[key] += value
         self._data.counts[key] += n
         self._data.average[key] = self._data.total[key] / self._data.counts[key]
 
@@ -99,7 +101,10 @@ def plot_metric(metric_train, metric_val, metric, save_path):
         item.set_weight('normal')
     plt.savefig(save_path + '/' + metric + '.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def plot_prediction(outputs, target, save_path, scatter=True, train=False):
+def plot_prediction(outputs, target, save_path, scatter=True, train=False, file_name='Uncertainty'):
+    outputs = outputs.cpu()
+    target = target.cpu()
+
     textsize = 15
     marker = 5
 
@@ -124,18 +129,21 @@ def plot_prediction(outputs, target, save_path, scatter=True, train=False):
     ax = plt.gca()
     plt.title('Prediction')
 
-    plt.savefig(save_path + '/Prediction.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+    plt.savefig(save_path + '/' + file_name + '.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def plot_uncertainty_noise(means, noise, total_unc, target, save_path, train=False, scatter=True):
+def plot_uncertainty_noise(means, noise, total_unc, target, save_path, train=False, scatter=True, file_name='Uncertainty'):
+    means = means.cpu()
+    noise = noise.cpu()
+    target = target.cpu()
 
     textsize = 15
     marker = 5
 
     means = means.reshape((means.shape[0],))
     noise = noise.reshape((noise.shape[0],))
-    total_unc_1 = total_unc[0].reshape((total_unc[0].shape[0],))
-    total_unc_2 = total_unc[1].reshape((total_unc[1].shape[0],))
-    total_unc_3 = total_unc[2].reshape((total_unc[2].shape[0],))
+    total_unc_1 = total_unc[0].reshape((total_unc[0].shape[0],)).cpu()
+    total_unc_2 = total_unc[1].reshape((total_unc[1].shape[0],)).cpu()
+    total_unc_3 = total_unc[2].reshape((total_unc[2].shape[0],)).cpu()
 
     c = ['#1f77b4', '#ff7f0e']
     ind = np.arange(0, len(target))
@@ -146,12 +154,16 @@ def plot_uncertainty_noise(means, noise, total_unc, target, save_path, train=Fal
     else:
         ax1.plot(ind, target, 'b')
     ax1.plot(ind, means, 'r')
-    plt.fill_between(ind, means - total_unc_3, means + total_unc_3,
-                     alpha=0.25, label='99.7% Confidence')
+    # plt.fill_between(ind, means - total_unc_3, means + total_unc_3,
+    #                  alpha=0.25, label='99.7% Confidence')
+    # plt.fill_between(ind, means - total_unc_2, means + total_unc_2,
+    #                  alpha=0.25, label='95% Confidence')
+    # plt.fill_between(ind, means - total_unc_1, means + total_unc_1,
+    #                  alpha=0.25, label='68% Confidence')
+    # plt.fill_between(ind, means - noise, means + noise,
+    #                  alpha=0.25, label='Noise')
     plt.fill_between(ind, means - total_unc_2, means + total_unc_2,
                      alpha=0.25, label='95% Confidence')
-    plt.fill_between(ind, means - total_unc_1, means + total_unc_1,
-                     alpha=0.25, label='68% Confidence')
     plt.fill_between(ind, means - noise, means + noise,
                      alpha=0.25, label='Noise')
     ax1.set_ylabel('prediction')
@@ -165,9 +177,16 @@ def plot_uncertainty_noise(means, noise, total_unc, target, save_path, train=Fal
     ax = plt.gca()
     plt.title('Uncertainty')
 
-    plt.savefig(save_path + '/uncertainty.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+    plt.savefig(save_path + '/' + file_name + '.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def plot_uncertainty(means, stds, target, save_path, train=False, scatter=True):
+def plot_uncertainty(means, stds, target, save_path, train=False, scatter=True, file_name='Uncertainty'):
+    means = means.cpu()
+    stds = stds.cpu()
+    target = target.cpu()
+
+    means = means.cpu()
+    stds = stds.cpu()
+    target = target.cpu()
 
     textsize = 15
     marker = 5
@@ -184,12 +203,14 @@ def plot_uncertainty(means, stds, target, save_path, train=False, scatter=True):
     else:
         ax1.plot(ind, target, 'b')
     ax1.plot(ind, means, 'r')
-    plt.fill_between(ind, means - 3 * stds, means + 3 * stds,
-                     alpha=0.25, label='99.7% Confidence')
+    # plt.fill_between(ind, means - 3 * stds, means + 3 * stds,
+    #                  alpha=0.25, label='99.7% Confidence')
+    # plt.fill_between(ind, means - 2 * stds, means + 2 * stds,
+    #                  alpha=0.25, label='95% Confidence')
+    # plt.fill_between(ind, means - stds, means + stds,
+    #                  alpha=0.25, label='68% Confidence')
     plt.fill_between(ind, means - 2 * stds, means + 2 * stds,
                      alpha=0.25, label='95% Confidence')
-    plt.fill_between(ind, means - stds, means + stds,
-                     alpha=0.25, label='68% Confidence')
     ax1.set_ylabel('prediction')
     if train:
         plt.xlabel('all points')
@@ -201,9 +222,13 @@ def plot_uncertainty(means, stds, target, save_path, train=False, scatter=True):
     ax = plt.gca()
     plt.title('Uncertainty')
 
-    plt.savefig(save_path + '/uncertainty.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+    plt.savefig(save_path + '/' + file_name + '.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def plot_err_bars(y_pred_U, y_pred_L, target, save_path):
+def plot_err_bars(y_pred_U, y_pred_L, target, save_path, file_name='Errorbar'):
+    y_pred_U = y_pred_U.cpu()
+    y_pred_L = y_pred_L.cpu()
+    target = target.cpu()
+
     """
 	plot the error bar plot
 	"""
@@ -221,9 +246,14 @@ def plot_err_bars(y_pred_U, y_pred_L, target, save_path):
 
     ax.legend(loc='upper left')
 
-    fig.savefig(save_path + '/Errorbar.png', bbox_inches='tight')
+    fig.savefig(save_path + '/' + file_name + '.png', bbox_inches='tight')
 
-def plot_uncertainty_QD(y_pred_U, y_pred_L, y_pred_Mid, target, save_path, scatter=True, train=False):
+def plot_uncertainty_QD(y_pred_U, y_pred_L, y_pred_Mid, target, save_path, scatter=True, train=False, file_name='Uncertainty'):
+    y_pred_U = y_pred_U.cpu()
+    y_pred_L = y_pred_L.cpu()
+    y_pred_Mid = y_pred_Mid.cpu()
+    target = target.cpu()
+
     textsize = 15
     marker = 5
 
@@ -251,4 +281,4 @@ def plot_uncertainty_QD(y_pred_U, y_pred_L, y_pred_Mid, target, save_path, scatt
     ax = plt.gca()
     plt.title('Uncertainty')
 
-    plt.savefig(save_path + '/uncertainty.png', bbox_inches='tight')
+    plt.savefig(save_path + '/' + file_name + '.png', bbox_inches='tight')

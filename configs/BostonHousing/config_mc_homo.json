@@ -7,7 +7,7 @@
         "args": {
             "input_dim": 13,
             "output_dim": 1,
-            "n_hid": [50, 50],
+            "n_hid": [50],
             "pdrop": 0.2,
             "regression_type": "homo"
         }
@@ -24,11 +24,11 @@
         }
     },
     "optimizer": {
-        "type": "Adam",
+        "type": "SGD",
         "args":{
-            "lr": 0.001,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr": 0.0001,
+            "weight_decay": 1.23e-6,
+            "momentum": 0.9
         }
     },
     "loss": "log_gaussian_homo",

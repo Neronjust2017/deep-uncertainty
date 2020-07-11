@@ -20,8 +20,8 @@
             "batch_size": 128,
             "shuffle": false,
              "n_input": 36,
-            "n_val": 12,
-            "n_test": 12,
+            "n_val": 5,
+            "n_test": 20,
             "num_workers": 2
         }
     },

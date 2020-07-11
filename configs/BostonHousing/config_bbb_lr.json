@@ -1,24 +1,15 @@
 {
-    "name": "BH_Bayes_MLP",
+    "name": "BH_Bayes_LR_MLP",
     "n_gpu": 1,
 
     "arch": {
         "Bayes": "Bayes_By_Backprop",
-        "type": "Bayes_MLP",
+        "type": "Bayes_MLP_LR",
         "args": {
             "input_dim": 13,
             "output_dim": 1,
             "n_hid": [50, 50],
-            "prior": {
-                "type": "GMM_prior",
-                "paramters": {
-                    "mu1": 0,
-                    "mu2": 0,
-                    "sigma1": 10,
-                    "sigma2": 0.0005,
-                    "pi":0.75
-                }
-            }
+            "prior_sig": 10
         }
     },
     "data_loader": {

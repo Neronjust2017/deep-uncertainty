@@ -20,7 +20,7 @@ def sample_weights(W_mu, b_mu, W_p, b_p):
 
     return W, b
 
-class Bayes_Mlp(BaseModel):
+class Bayes_MLP(BaseModel):
     def __init__(self, input_dim, output_dim, n_hid, prior, activation='ReLU', regression_type=None):
         super().__init__()
         # prior_instance = isotropic_gauss_prior(mu=0, sigma=0.1)
@@ -100,7 +100,7 @@ class Bayes_Mlp(BaseModel):
 
         return predictions, tlqw_vec, tlpw_vec
 
-class Bayes_Mlp_LR(BaseModel):
+class Bayes_MLP_LR(BaseModel):
     def __init__(self, input_dim, output_dim, n_hid, prior_sig, activation='ReLU', regression_type=None):
         super().__init__()
         # prior_instance = isotropic_gauss_prior(mu=0, sigma=0.1)
@@ -122,7 +122,8 @@ class Bayes_Mlp_LR(BaseModel):
 
         if regression_type == 'homo':
             init_log_noise = 0
-            self.log_noise = nn.Parameter(torch.cuda.FloatTensor([init_log_noise]))
+            # self.log_noise = nn.Parameter(torch.cuda.FloatTensor([init_log_noise]))
+            self.log_noise = nn.Parameter(torch.FloatTensor([init_log_noise]))
 
         # Non linearity
         if activation == 'ReLU':

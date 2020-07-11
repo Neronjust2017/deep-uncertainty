@@ -1,13 +1,12 @@
 {
-    "name": "Vd_Mlp",
+    "name": "deep_ensemble_MLP",
     "n_gpu": 1,
 
     "arch": {
-        "Bayes": "Variational_dropout",
-        "type": "Vd_Mlp",
+        "type": "MLP",
         "args": {
             "input_dim": 13,
-            "output_dim": 1,
+            "output_dim": 2,
             "n_hid": [50]
             }
         },
@@ -17,20 +16,21 @@
         "args":{
             "data_dir": "data/",
             "batch_size": 128,
-            "shuffle": true,
+            "shuffle": false,
             "validation_split": 0.1,
             "test_split": 0.1,
-            "num_workers": 0
+            "num_workers": 2
         }
     },
     "optimizer": {
         "type": "SGD",
         "args":{
             "lr": 0.001,
-            "weight_decay": 0
+            "weight_decay": 1e-6,
+            "momentum": 0.9
         }
     },
-    "loss": "mse_loss",
+    "loss": "gaussian_nll",
     "metrics": [
         "mse",
         "picp",
@@ -39,24 +39,27 @@
     "lr_scheduler": {
         "type": "StepLR",
         "args": {
-            "step_size": 50,
+            "step_size": 100,
             "gamma": 0.1
         }
     },
     "trainer": {
-        "type": "Variational_dropout",
+        "type": "Deep_Ensemble",
         "epochs": 100,
-        "save_dir": "saved/",
+        "save_dir": "saved/ensemble2/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
-        "early_stop": 10,
-        "tensorboard": true
+        "tensorboard": true,
+        "loss": {
+            "alpha": 1,
+            "epsilon": 0.01
+        }
     },
       "evaluater": {
-        "result_dir": "saved/",
+        "result_dir": "saved/ensemble2/",
         "verbosity": 2,
-          "visualization": {
+           "visualization": {
             "scatter": true
         }
 
